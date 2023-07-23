@@ -1,4 +1,5 @@
-import { IconClearAll, IconSettings } from '@tabler/icons-react';
+import { ChatBody, Conversation, Message } from '@/types/chat';
+import { IconCircleMinus, IconCirclePlus, IconClearAll, IconSettings } from '@tabler/icons-react';
 import {
   MutableRefObject,
   memo,
@@ -8,37 +9,34 @@ import {
   useRef,
   useState,
 } from 'react';
-import toast from 'react-hot-toast';
-
-import { useTranslation } from 'next-i18next';
-
-import { getEndpoint } from '@/utils/app/api';
 import {
   saveConversation,
   saveConversations,
   updateConversation,
 } from '@/utils/app/conversation';
-import { throttle } from '@/utils/data/throttle';
 
-import { ChatBody, Conversation, Message } from '@/types/chat';
-import { Plugin } from '@/types/plugin';
-
-import HomeContext from '@/pages/api/home/home.context';
-
-import Spinner from '../Spinner';
 import { ChatInput } from './ChatInput';
 import { ChatLoader } from './ChatLoader';
 import { ErrorMessageDiv } from './ErrorMessageDiv';
+import HomeContext from '@/pages/api/home/home.context';
+import { MemoizedChatMessage } from './MemoizedChatMessage';
 import { ModelSelect } from './ModelSelect';
+import { Plugin } from '@/types/plugin';
+import Spinner from '../Spinner';
 import { SystemPrompt } from './SystemPrompt';
 import { TemperatureSlider } from './Temperature';
-import { MemoizedChatMessage } from './MemoizedChatMessage';
+import { getEndpoint } from '@/utils/app/api';
+import { throttle } from '@/utils/data/throttle';
+import toast from 'react-hot-toast';
+import { useTranslation } from 'next-i18next';
+import { v4 as uuidv4 } from 'uuid';
 
 interface Props {
   stopConversationRef: MutableRefObject<boolean>;
+  chatId: string;
 }
 
-export const Chat = memo(({ stopConversationRef }: Props) => {
+export const Chat = memo(({ stopConversationRef, chatId }: Props) => {
   const { t } = useTranslation('chat');
 
   const {
@@ -57,7 +55,7 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
     handleUpdateConversation,
     dispatch: homeDispatch,
   } = useContext(HomeContext);
-
+// console.log('selectedConversation',selectedConversation)
   const [currentMessage, setCurrentMessage] = useState<Message>();
   const [autoScrollEnabled, setAutoScrollEnabled] = useState<boolean>(true);
   const [showSettings, setShowSettings] = useState<boolean>(false);
@@ -300,6 +298,23 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
     }
   };
 
+  const onAddModelForComparison = () => {
+    const chats = localStorage.getItem('chats');
+    let chatIds = chats ? JSON.parse(chats):[];
+    chatIds.push(uuidv4());
+    localStorage.setItem('chats', JSON.stringify(chatIds));
+    window.dispatchEvent(new Event('newChat'));
+  }
+
+  const onRemoveModelForComparison = () => {
+    const chats = localStorage.getItem('chats');
+    let chatIds: [string] = chats ? JSON.parse(chats):[];
+    if(chatIds.length >1){
+      localStorage.setItem('chats', JSON.stringify(chatIds.filter(chat => chat !== chatId)));
+      window.dispatchEvent(new Event('newChat'));
+    }
+  }
+
   const scrollDown = () => {
     if (autoScrollEnabled) {
       messagesEndRef.current?.scrollIntoView(true);
@@ -396,7 +411,7 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
             ref={chatContainerRef}
             onScroll={handleScroll}
           >
-            {selectedConversation?.messages.length === 0 ? (
+            {selectedConversation?.messages.length === 0 && false ? (
               <>
                 <div className="mx-auto flex flex-col space-y-5 md:space-y-10 px-3 pt-5 md:pt-12 sm:max-w-[600px]">
                   <div className="text-center text-3xl font-semibold text-gray-800 dark:text-gray-100">
@@ -439,26 +454,66 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
               </>
             ) : (
               <>
-                <div className="sticky top-0 z-10 flex justify-center border border-b-neutral-300 bg-neutral-100 py-2 text-sm text-neutral-500 dark:border-none dark:bg-[#444654] dark:text-neutral-200">
-                  {t('Model')}: {selectedConversation?.model.name} | {t('Temp')}
-                  : {selectedConversation?.temperature} |
+                <div className="sticky top-0 z-10 flex  border-b-1 border-b-neutral-300 bg-neutral-100 p-2 text-sm text-neutral-500 dark:border-none dark:bg-[#444654] dark:text-neutral-200 bg-white/80 shadow-[0_1px_rgba(202,206,214,.3),0_5px_10px_-5px_rgba(0,0,0,.05)]">
+                <div className='flex-1'><ModelSelect /></div>
+                <p className="my-auto ml-1">
+                {t('Temp')}
+                  : {selectedConversation?.temperature} </p>
+                  {/* {t('Model')}: {selectedConversation?.model.name} | {t('Temp')}
+                  : {selectedConversation?.temperature} | */}
+                  <div className='flex  ml-auto'>
+                  <div className="group relative  flex justify-center">
                   <button
                     className="ml-2 cursor-pointer hover:opacity-50"
                     onClick={handleSettings}
                   >
                     <IconSettings size={18} />
                   </button>
+                  <span className="absolute top-10 scale-0 transition-all border p-2 group-hover:scale-100 bg-white whitespace-nowrap">Configure model</span>
+                 </div>
+                 <div className="group relative  flex justify-center"> 
                   <button
                     className="ml-2 cursor-pointer hover:opacity-50"
+                    onClick={onAddModelForComparison}
+                    // title={"Add model for comparison"}
+                  >
+                    <IconCirclePlus size={18} />
+                  </button>
+                  <span className="absolute top-10 scale-0 transition-all border p-2 group-hover:scale-100 bg-white whitespace-nowrap">Add model for comparison</span>
+                 </div>
+                 <div className="group relative  flex justify-center">
+                  <button
+                    className="ml-2 cursor-pointer hover:opacity-50"
+                    onClick={onRemoveModelForComparison}
+                  >
+                    <IconCircleMinus size={18} />
+                  </button>
+                  <span className="absolute top-10 scale-0 transition-all border p-2 group-hover:scale-100 bg-white whitespace-nowrap">Remove model</span>
+                 </div>
+                 <div className="group relative  flex justify-center">
+                  <button
+                    className="ml-2 cursor-pointer hover:opacity-50 disabled:opacity-50"
                     onClick={onClearAll}
+                    disabled={selectedConversation?.messages.length === 0}
                   >
                     <IconClearAll size={18} />
                   </button>
+                  <span className="absolute top-10 scale-0 transition-all border p-2 group-hover:scale-100 bg-white whitespace-nowrap overflow-visible">Clear conversation</span>
+                 </div>
+                  </div>
                 </div>
                 {showSettings && (
                   <div className="flex flex-col space-y-10 md:mx-auto md:max-w-xl md:gap-6 md:py-3 md:pt-6 lg:max-w-2xl lg:px-0 xl:max-w-3xl">
                     <div className="flex h-full flex-col space-y-4 border-b border-neutral-200 p-4 dark:border-neutral-600 md:rounded-lg md:border">
-                      <ModelSelect />
+                    <TemperatureSlider
+                        label={t('Temperature')}
+                        onChangeTemperature={(temperature) =>
+                          handleUpdateConversation(selectedConversation, {
+                            key: 'temperature',
+                            value: temperature,
+                          })
+                        }
+                      />
                     </div>
                   </div>
                 )}

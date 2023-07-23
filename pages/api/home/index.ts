@@ -1,1 +1,2 @@
-export { default, getServerSideProps } from './home';
+export { default } from './multiHome';
+// export {  getServerSideProps } from './home';

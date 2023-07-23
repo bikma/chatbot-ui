@@ -16,17 +16,14 @@ import {
   useState,
 } from 'react';
 
-import { useTranslation } from 'next-i18next';
-
+import HomeContext from '@/pages/api/home/home.context';
 import { Message } from '@/types/chat';
 import { Plugin } from '@/types/plugin';
-import { Prompt } from '@/types/prompt';
-
-import HomeContext from '@/pages/api/home/home.context';
-
 import { PluginSelect } from './PluginSelect';
+import { Prompt } from '@/types/prompt';
 import { PromptList } from './PromptList';
 import { VariableModal } from './VariableModal';
+import { useTranslation } from 'next-i18next';
 
 interface Props {
   onSend: (message: Message, plugin: Plugin | null) => void;
@@ -379,8 +376,9 @@ export const ChatInput = ({
           )}
         </div>
       </div>
-      <div className="px-3 pt-2 pb-3 text-center text-[12px] text-black/50 dark:text-white/50 md:px-4 md:pt-3 md:pb-6">
-        <a
+
+      <div className="px-3 pt-2 text-right text-[13px] text-black dark:text-neutral-200 md:px-4 md:pt-3">
+        {/* <a
           href="https://github.com/mckaywrigley/chatbot-ui"
           target="_blank"
           rel="noreferrer"
@@ -391,7 +389,12 @@ export const ChatInput = ({
         .{' '}
         {t(
           "Chatbot UI is an advanced chatbot kit for OpenAI's chat models aiming to mimic ChatGPT's interface and functionality.",
-        )}
+        )} */}
+
+        <label className="inline-flex items-center justify-center gap-1.5 " data-state="closed">
+          <input className="rounded w-3.5 h-3.5 text-zinc-900" type="checkbox" />
+          <span className="text-xs font-medium select-none text-zinc-600 whitespace-nowrap">Sync Chats</span>
+        </label>
       </div>
     </div>
   );
