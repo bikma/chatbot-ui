@@ -308,9 +308,9 @@ export const Chat = memo(({ stopConversationRef, chatId }: Props) => {
       id: uuidv4(),
       name: t('New Conversation'),
       messages: [],
-      model: selectedChat.model,
-      prompt: selectedChat.prompt,
-      temperature: selectedChat.temperature,
+      model: selectedChat && selectedChat.model,
+      prompt: selectedChat && selectedChat.prompt,
+      temperature: selectedChat && selectedChat.temperature,
       folderId: null,
     }
     localStorage.setItem('selectedConversation-'+id, JSON.stringify(newChat))
