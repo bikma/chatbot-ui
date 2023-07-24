@@ -1,3 +1,4 @@
+import { FC, memo, useContext, useEffect, useRef, useState } from 'react';
 import {
   IconCheck,
   IconCopy,
@@ -6,22 +7,16 @@ import {
   IconTrash,
   IconUser,
 } from '@tabler/icons-react';
-import { FC, memo, useContext, useEffect, useRef, useState } from 'react';
-
-import { useTranslation } from 'next-i18next';
-
-import { updateConversation } from '@/utils/app/conversation';
-
-import { Message } from '@/types/chat';
-
-import HomeContext from '@/pages/api/home/home.context';
 
 import { CodeBlock } from '../Markdown/CodeBlock';
+import HomeContext from '@/pages/api/home/home.context';
 import { MemoizedReactMarkdown } from '../Markdown/MemoizedReactMarkdown';
-
+import { Message } from '@/types/chat';
 import rehypeMathjax from 'rehype-mathjax';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
+import { updateConversation } from '@/utils/app/conversation';
+import { useTranslation } from 'next-i18next';
 
 export interface Props {
   message: Message;
@@ -128,8 +123,8 @@ export const ChatMessage: FC<Props> = memo(({ message, messageIndex, onEdit }) =
     <div
       className={`group md:px-4 ${
         message.role === 'assistant'
-          ? 'border-b border-black/10 bg-gray-50 text-gray-800 dark:border-gray-900/50 dark:bg-[#444654] dark:text-gray-100'
-          : 'border-b border-black/10 bg-white text-gray-800 dark:border-gray-900/50 dark:bg-[#343541] dark:text-gray-100'
+          ? 'border-b border-black/10 bg-zinc-50 text-gray-800 dark:border-gray-900/50 dark:bg-[#444654] dark:text-gray-100'
+          : 'border-b border-black/10 bg-white text-gray-800 dark:border-gray-900/50 dark:bg-[#343541] dark:text-gray-100 bg-zinc-100'
       }`}
       style={{ overflowWrap: 'anywhere' }}
     >
@@ -191,7 +186,7 @@ export const ChatMessage: FC<Props> = memo(({ message, messageIndex, onEdit }) =
               )}
 
               {!isEditing && (
-                <div className="md:-mr-8 ml-1 md:ml-0 flex flex-col md:flex-row gap-4 md:gap-1 items-center md:items-start justify-end md:justify-start">
+                <div className="md:-mr-4 ml-1 md:ml-0 flex flex-col md:flex-row gap-4 md:gap-1 items-center md:items-start justify-end md:justify-start">
                   <button
                     className="invisible group-hover:visible focus:visible text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
                     onClick={toggleEditing}
@@ -266,7 +261,7 @@ export const ChatMessage: FC<Props> = memo(({ message, messageIndex, onEdit }) =
                 }`}
               </MemoizedReactMarkdown>
 
-              <div className="md:-mr-8 ml-1 md:ml-0 flex flex-col md:flex-row gap-4 md:gap-1 items-center md:items-start justify-end md:justify-start">
+              <div className="md:-mr-4 ml-1 md:ml-0 flex flex-col md:flex-row gap-4 md:gap-1 items-center md:items-start justify-end md:justify-start">
                 {messagedCopied ? (
                   <IconCheck
                     size={20}
