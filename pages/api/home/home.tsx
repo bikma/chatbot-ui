@@ -102,7 +102,7 @@ const Home = ({
       value: conversation,
     });
 
-    saveConversation(conversation);
+    saveConversation(conversation, chatId);
   };
 
   // FOLDER OPERATIONS  --------------------------------------------
@@ -137,7 +137,7 @@ const Home = ({
     });
 
     dispatch({ field: 'conversations', value: updatedConversations });
-    saveConversations(updatedConversations);
+    saveConversations(updatedConversations, chatId);
 
     const updatedPrompts: Prompt[] = prompts.map((p) => {
       if (p.folderId === folderId) {
@@ -196,8 +196,8 @@ const Home = ({
     dispatch({ field: 'selectedConversation', value: newConversation });
     dispatch({ field: 'conversations', value: updatedConversations });
 
-    saveConversation(newConversation);
-    saveConversations(updatedConversations);
+    saveConversation(newConversation, chatId);
+    saveConversations(updatedConversations, chatId);
 
     dispatch({ field: 'loading', value: false });
   };
@@ -214,6 +214,7 @@ const Home = ({
     const { single, all } = updateConversation(
       updatedConversation,
       conversations,
+      chatId
     );
 
     dispatch({ field: 'selectedConversation', value: single });
@@ -297,7 +298,7 @@ const Home = ({
       dispatch({ field: 'prompts', value: JSON.parse(prompts) });
     }
 
-    const conversationHistory = localStorage.getItem('conversationHistory');
+    const conversationHistory = localStorage.getItem('conversationHistory-'+chatId);
     if (conversationHistory) {
       const parsedConversationHistory: Conversation[] =
         JSON.parse(conversationHistory);
@@ -308,7 +309,7 @@ const Home = ({
       dispatch({ field: 'conversations', value: cleanedConversationHistory });
     }
 
-    const selectedConversation = localStorage.getItem('selectedConversation');
+    const selectedConversation = localStorage.getItem('selectedConversation-'+chatId);
     if (selectedConversation) {
       const parsedSelectedConversation: Conversation =
         JSON.parse(selectedConversation);

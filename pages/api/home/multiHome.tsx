@@ -50,8 +50,8 @@ const MultiHome = () => {
     <span className="my-auto font-bold lg:text-lg pl-2">AI Playground</span>
     </div>
     <div className="flex h-[calc(100vh-56px)] w-full sm:pt-0  divide-x">
-      {chats.map((chat, index) => (
-        <Home key={index} serverSideApiKeyIsSet={true} serverSidePluginKeysSet={true} defaultModelId={OpenAIModelID.GPT_4}  chatId={chat}/>
+      {chats.map((chat) => (
+        <Home key={chat} serverSideApiKeyIsSet={true} serverSidePluginKeysSet={true} defaultModelId={OpenAIModelID.GPT_4}  chatId={chat}/>
       ))}
     </div></>
   );

@@ -55,7 +55,6 @@ export const Chat = memo(({ stopConversationRef, chatId }: Props) => {
     handleUpdateConversation,
     dispatch: homeDispatch,
   } = useContext(HomeContext);
-// console.log('selectedConversation',selectedConversation)
   const [currentMessage, setCurrentMessage] = useState<Message>();
   const [autoScrollEnabled, setAutoScrollEnabled] = useState<boolean>(true);
   const [showSettings, setShowSettings] = useState<boolean>(false);
@@ -195,7 +194,7 @@ export const Chat = memo(({ stopConversationRef, chatId }: Props) => {
               });
             }
           }
-          saveConversation(updatedConversation);
+          saveConversation(updatedConversation, chatId);
           const updatedConversations: Conversation[] = conversations.map(
             (conversation) => {
               if (conversation.id === selectedConversation.id) {
@@ -208,7 +207,7 @@ export const Chat = memo(({ stopConversationRef, chatId }: Props) => {
             updatedConversations.push(updatedConversation);
           }
           homeDispatch({ field: 'conversations', value: updatedConversations });
-          saveConversations(updatedConversations);
+          saveConversations(updatedConversations, chatId);
           homeDispatch({ field: 'messageIsStreaming', value: false });
         } else {
           const { answer } = await response.json();
@@ -224,7 +223,7 @@ export const Chat = memo(({ stopConversationRef, chatId }: Props) => {
             field: 'selectedConversation',
             value: updateConversation,
           });
-          saveConversation(updatedConversation);
+          saveConversation(updatedConversation, chatId);
           const updatedConversations: Conversation[] = conversations.map(
             (conversation) => {
               if (conversation.id === selectedConversation.id) {
@@ -237,7 +236,7 @@ export const Chat = memo(({ stopConversationRef, chatId }: Props) => {
             updatedConversations.push(updatedConversation);
           }
           homeDispatch({ field: 'conversations', value: updatedConversations });
-          saveConversations(updatedConversations);
+          saveConversations(updatedConversations, chatId);
           homeDispatch({ field: 'loading', value: false });
           homeDispatch({ field: 'messageIsStreaming', value: false });
         }
@@ -454,22 +453,32 @@ export const Chat = memo(({ stopConversationRef, chatId }: Props) => {
               </>
             ) : (
               <>
-                <div className="sticky top-0 z-10 flex  border-b-1 border-b-neutral-300 bg-neutral-100 p-2 text-sm text-neutral-500 dark:border-none dark:bg-[#444654] dark:text-neutral-200 bg-white/80 shadow-[0_1px_rgba(202,206,214,.3),0_5px_10px_-5px_rgba(0,0,0,.05)]">
-                <div className='flex-1'><ModelSelect /></div>
+                <div className="sticky top-0 z-10 flex  border-b-1 border-b-neutral-300 bg-neutral-100 p-2 text-sm text-neutral-500 dark:border-none dark:bg-[#444654] dark:text-neutral-200 bg-white shadow-[0_1px_rgba(202,206,214,.3),0_5px_10px_-5px_rgba(0,0,0,.05)]">
+                <div className='flex'><ModelSelect />
                 <p className="my-auto ml-1">
                 {t('Temp')}
-                  : {selectedConversation?.temperature} </p>
+                  : {selectedConversation?.temperature} </p></div>
                   {/* {t('Model')}: {selectedConversation?.model.name} | {t('Temp')}
                   : {selectedConversation?.temperature} | */}
                   <div className='flex  ml-auto'>
                   <div className="group relative  flex justify-center">
                   <button
-                    className="ml-2 cursor-pointer hover:opacity-50"
-                    onClick={handleSettings}
+                    className="ml-2 cursor-pointer hover:opacity-50 disabled:opacity-50"
+                    onClick={onClearAll}
+                    disabled={selectedConversation?.messages.length === 0}
                   >
-                    <IconSettings size={18} />
+                    <IconClearAll size={18} />
                   </button>
-                  <span className="absolute top-10 scale-0 transition-all border p-2 group-hover:scale-100 bg-white whitespace-nowrap">Configure model</span>
+                  <span className="absolute top-10 scale-0 transition-all border p-2 group-hover:scale-100 bg-white whitespace-nowrap overflow-visible">Clear conversation</span>
+                 </div>
+                 <div className="group relative  flex justify-center">
+                  <button
+                    className="ml-2 cursor-pointer hover:opacity-50"
+                    onClick={onRemoveModelForComparison}
+                  >
+                    <IconCircleMinus size={18} />
+                  </button>
+                  <span className="absolute top-10 scale-0 transition-all border p-2 group-hover:scale-100 bg-white whitespace-nowrap">Remove model</span>
                  </div>
                  <div className="group relative  flex justify-center"> 
                   <button
@@ -481,24 +490,15 @@ export const Chat = memo(({ stopConversationRef, chatId }: Props) => {
                   </button>
                   <span className="absolute top-10 scale-0 transition-all border p-2 group-hover:scale-100 bg-white whitespace-nowrap">Add model for comparison</span>
                  </div>
+
                  <div className="group relative  flex justify-center">
                   <button
                     className="ml-2 cursor-pointer hover:opacity-50"
-                    onClick={onRemoveModelForComparison}
+                    onClick={handleSettings}
                   >
-                    <IconCircleMinus size={18} />
+                    <IconSettings size={18} />
                   </button>
-                  <span className="absolute top-10 scale-0 transition-all border p-2 group-hover:scale-100 bg-white whitespace-nowrap">Remove model</span>
-                 </div>
-                 <div className="group relative  flex justify-center">
-                  <button
-                    className="ml-2 cursor-pointer hover:opacity-50 disabled:opacity-50"
-                    onClick={onClearAll}
-                    disabled={selectedConversation?.messages.length === 0}
-                  >
-                    <IconClearAll size={18} />
-                  </button>
-                  <span className="absolute top-10 scale-0 transition-all border p-2 group-hover:scale-100 bg-white whitespace-nowrap overflow-visible">Clear conversation</span>
+                  <span className="absolute top-10 scale-0 transition-all border p-2 group-hover:scale-100 bg-white whitespace-nowrap">Configure model</span>
                  </div>
                   </div>
                 </div>
