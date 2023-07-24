@@ -21,10 +21,11 @@ import { useTranslation } from 'next-i18next';
 export interface Props {
   message: Message;
   messageIndex: number;
-  onEdit?: (editedMessage: Message) => void
+  onEdit?: (editedMessage: Message) => void,
+  chatId: string,
 }
 
-export const ChatMessage: FC<Props> = memo(({ message, messageIndex, onEdit }) => {
+export const ChatMessage: FC<Props> = memo(({ message, messageIndex, onEdit, chatId }) => {
   const { t } = useTranslation('chat');
 
   const {
@@ -84,6 +85,7 @@ export const ChatMessage: FC<Props> = memo(({ message, messageIndex, onEdit }) =
     const { single, all } = updateConversation(
       updatedConversation,
       conversations,
+      chatId,
     );
     homeDispatch({ field: 'selectedConversation', value: single });
     homeDispatch({ field: 'conversations', value: all });

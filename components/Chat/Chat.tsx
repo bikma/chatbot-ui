@@ -543,6 +543,7 @@ export const Chat = memo(({ stopConversationRef, chatId }: Props) => {
                         selectedConversation?.messages.length - index,
                       );
                     }}
+                    chatId={chatId}
                   />
                 ))}
 
