@@ -300,8 +300,20 @@ export const Chat = memo(({ stopConversationRef, chatId }: Props) => {
   const onAddModelForComparison = () => {
     const chats = localStorage.getItem('chats');
     let chatIds = chats ? JSON.parse(chats):[];
-    chatIds.push(uuidv4());
+    const id = uuidv4()
+    chatIds.push(id);
     localStorage.setItem('chats', JSON.stringify(chatIds));
+    const selectedChat = JSON.parse(localStorage.getItem('selectedConversation-'+chatId))
+    const newChat = {
+      id: uuidv4(),
+      name: t('New Conversation'),
+      messages: [],
+      model: selectedChat.model,
+      prompt: selectedChat.prompt,
+      temperature: selectedChat.temperature,
+      folderId: null,
+    }
+    localStorage.setItem('selectedConversation-'+id, JSON.stringify(newChat))
     window.dispatchEvent(new Event('newChat'));
   }
 
