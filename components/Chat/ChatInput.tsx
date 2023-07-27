@@ -16,14 +16,23 @@ import {
   useState,
 } from 'react';
 
-import HomeContext from '@/pages/api/home/home.context';
+import { useTranslation } from 'next-i18next';
+
 import { Message } from '@/types/chat';
 import { Plugin } from '@/types/plugin';
-import { PluginSelect } from './PluginSelect';
 import { Prompt } from '@/types/prompt';
+
+import HomeContext from '@/pages/api/home/home.context';
+
+import { PluginSelect } from './PluginSelect';
 import { PromptList } from './PromptList';
 import { VariableModal } from './VariableModal';
-import { useTranslation } from 'next-i18next';
+
+import { useChatContext } from '../../pages/api/home/multiChat';
+import {
+  getSyncChat,
+  saveSyncChat
+} from '@/pages/api/home/utils';
 
 interface Props {
   onSend: (message: Message, plugin: Plugin | null) => void;
@@ -32,6 +41,7 @@ interface Props {
   stopConversationRef: MutableRefObject<boolean>;
   textareaRef: MutableRefObject<HTMLTextAreaElement | null>;
   showScrollDownButton: boolean;
+  chatId:string,
 }
 
 export const ChatInput = ({
@@ -41,6 +51,7 @@ export const ChatInput = ({
   stopConversationRef,
   textareaRef,
   showScrollDownButton,
+  chatId,
 }: Props) => {
   const { t } = useTranslation('chat');
 
@@ -59,12 +70,27 @@ export const ChatInput = ({
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [showPluginSelect, setShowPluginSelect] = useState(false);
   const [plugin, setPlugin] = useState<Plugin | null>(null);
+  const [syncChat, setSyncChat] = useState<boolean>(getSyncChat(chatId));
+  const {sharedInputText, updateSharedInputText,syncChatSubmit,updateSyncChatSubmit } =
+  useChatContext();
 
   const promptListRef = useRef<HTMLUListElement | null>(null);
 
   const filteredPrompts = prompts.filter((prompt) =>
     prompt.name.toLowerCase().includes(promptInputValue.toLowerCase()),
   );
+  useEffect(() => {
+    // When shared input text changes, update the local inputText state
+    if(syncChat){
+      setContent(sharedInputText);
+      updatePromptListVisibility(sharedInputText);
+    }
+  }, [sharedInputText]);
+
+  useEffect(() => {
+    // When shared input text changes, update the local inputText state
+    if(syncChat && syncChatSubmit === true)handleSend();
+  }, [syncChatSubmit]);
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
@@ -81,6 +107,7 @@ export const ChatInput = ({
     }
 
     setContent(value);
+    if(syncChat)updateSharedInputText(value)
     updatePromptListVisibility(value);
   };
 
@@ -93,7 +120,7 @@ export const ChatInput = ({
       alert(t('Please enter a message'));
       return;
     }
-
+    if(syncChat)updateSyncChatSubmit(true)
     onSend({ role: 'user', content }, plugin);
     setContent('');
     setPlugin(null);
@@ -206,6 +233,11 @@ export const ChatInput = ({
       updatePromptListVisibility(prompt.content);
     }
   };
+
+  const handleSyncChat = () => {
+    saveSyncChat(!syncChat, chatId);
+    setSyncChat(!syncChat)
+  }
 
   const handleSubmit = (updatedVariables: string[]) => {
     const newContent = content?.replace(/{{(.*?)}}/g, (match, variable) => {
@@ -392,7 +424,7 @@ export const ChatInput = ({
         )} */}
 
         <label className="inline-flex items-center justify-center gap-1.5 " data-state="closed">
-          <input className="rounded w-3.5 h-3.5 text-zinc-900" type="checkbox" />
+          <input className="rounded w-3.5 h-3.5 text-zinc-900" type="checkbox" checked={syncChat} onChange={handleSyncChat}/>
           <span className="text-xs font-medium select-none text-zinc-600 whitespace-nowrap">Sync Chats</span>
         </label>
       </div>

@@ -1,5 +1,5 @@
-import { ChatBody, Conversation, Message } from '@/types/chat';
-import { IconCircleMinus, IconCirclePlus, IconClearAll, IconSettings } from '@tabler/icons-react';
+import { IconClearAll, IconSettings, IconCircleMinus, IconCirclePlus } from '@tabler/icons-react';
+
 import {
   MutableRefObject,
   memo,
@@ -9,27 +9,33 @@ import {
   useRef,
   useState,
 } from 'react';
+import toast from 'react-hot-toast';
+
+import { useTranslation } from 'next-i18next';
+
+import { getEndpoint } from '@/utils/app/api';
 import {
   saveConversation,
   saveConversations,
   updateConversation,
 } from '@/utils/app/conversation';
+import { throttle } from '@/utils/data/throttle';
 
+import { ChatBody, Conversation, Message } from '@/types/chat';
+import { Plugin } from '@/types/plugin';
+
+import HomeContext from '@/pages/api/home/home.context';
+
+import Spinner from '../Spinner';
 import { ChatInput } from './ChatInput';
 import { ChatLoader } from './ChatLoader';
 import { ErrorMessageDiv } from './ErrorMessageDiv';
-import HomeContext from '@/pages/api/home/home.context';
-import { MemoizedChatMessage } from './MemoizedChatMessage';
 import { ModelSelect } from './ModelSelect';
-import { Plugin } from '@/types/plugin';
-import Spinner from '../Spinner';
 import { SystemPrompt } from './SystemPrompt';
 import { TemperatureSlider } from './Temperature';
-import { getEndpoint } from '@/utils/app/api';
-import { throttle } from '@/utils/data/throttle';
-import toast from 'react-hot-toast';
-import { useTranslation } from 'next-i18next';
-import { v4 as uuidv4 } from 'uuid';
+import { MemoizedChatMessage } from './MemoizedChatMessage';
+
+import {onAddModelForComparison, onRemoveModelFromComparison}  from '@/pages/api/home/utils';
 
 interface Props {
   stopConversationRef: MutableRefObject<boolean>;
@@ -55,6 +61,7 @@ export const Chat = memo(({ stopConversationRef, chatId }: Props) => {
     handleUpdateConversation,
     dispatch: homeDispatch,
   } = useContext(HomeContext);
+
   const [currentMessage, setCurrentMessage] = useState<Message>();
   const [autoScrollEnabled, setAutoScrollEnabled] = useState<boolean>(true);
   const [showSettings, setShowSettings] = useState<boolean>(false);
@@ -297,35 +304,6 @@ export const Chat = memo(({ stopConversationRef, chatId }: Props) => {
     }
   };
 
-  const onAddModelForComparison = () => {
-    const chats = localStorage.getItem('chats');
-    let chatIds = chats ? JSON.parse(chats):[];
-    const id = uuidv4()
-    chatIds.push(id);
-    localStorage.setItem('chats', JSON.stringify(chatIds));
-    const selectedChat = JSON.parse(localStorage.getItem('selectedConversation-'+chatId))
-    const newChat = {
-      id: uuidv4(),
-      name: t('New Conversation'),
-      messages: [],
-      model: selectedChat && selectedChat.model,
-      prompt: selectedChat && selectedChat.prompt,
-      temperature: selectedChat && selectedChat.temperature,
-      folderId: null,
-    }
-    localStorage.setItem('selectedConversation-'+id, JSON.stringify(newChat))
-    window.dispatchEvent(new Event('newChat'));
-  }
-
-  const onRemoveModelForComparison = () => {
-    const chats = localStorage.getItem('chats');
-    let chatIds: [string] = chats ? JSON.parse(chats):[];
-    if(chatIds.length >1){
-      localStorage.setItem('chats', JSON.stringify(chatIds.filter(chat => chat !== chatId)));
-      window.dispatchEvent(new Event('newChat'));
-    }
-  }
-
   const scrollDown = () => {
     if (autoScrollEnabled) {
       messagesEndRef.current?.scrollIntoView(true);
@@ -486,7 +464,7 @@ export const Chat = memo(({ stopConversationRef, chatId }: Props) => {
                  <div className="group relative  flex justify-center">
                   <button
                     className="ml-2 cursor-pointer hover:opacity-50"
-                    onClick={onRemoveModelForComparison}
+                    onClick={() => onRemoveModelFromComparison(chatId)}
                   >
                     <IconCircleMinus size={18} />
                   </button>
@@ -495,8 +473,7 @@ export const Chat = memo(({ stopConversationRef, chatId }: Props) => {
                  <div className="group relative  flex justify-center"> 
                   <button
                     className="ml-2 cursor-pointer hover:opacity-50"
-                    onClick={onAddModelForComparison}
-                    // title={"Add model for comparison"}
+                    onClick={() => onAddModelForComparison(chatId)}
                   >
                     <IconCirclePlus size={18} />
                   </button>
@@ -571,6 +548,7 @@ export const Chat = memo(({ stopConversationRef, chatId }: Props) => {
               }
             }}
             showScrollDownButton={showScrollDownButton}
+            chatId={chatId}
           />
         </>
       )}
