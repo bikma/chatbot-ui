@@ -28,7 +28,7 @@ import { PluginSelect } from './PluginSelect';
 import { PromptList } from './PromptList';
 import { VariableModal } from './VariableModal';
 
-import { useChatContext } from '../../pages/api/home/multiChat';
+import { useMultiChatContext } from '../../pages/api/home/multiChat';
 import {
   getSyncChat,
   saveSyncChat
@@ -72,7 +72,7 @@ export const ChatInput = ({
   const [plugin, setPlugin] = useState<Plugin | null>(null);
   const [syncChat, setSyncChat] = useState<boolean>(getSyncChat(chatId));
   const {sharedInputText, updateSharedInputText,syncChatSubmit,updateSyncChatSubmit } =
-  useChatContext();
+  useMultiChatContext();
 
   const promptListRef = useRef<HTMLUListElement | null>(null);
 

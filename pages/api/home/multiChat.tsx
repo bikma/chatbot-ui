@@ -12,9 +12,9 @@ export interface Props {
     chatId: string
   }
   
-const ChatContext = createContext({});
+const MultiChatContext = createContext({});
 
-const MultiHome = () => {
+const MultiChat = () => {
   const [chats, setChats] = useState<string[]>([]);
   const [sharedInputText, setSharedInputText] = useState('');
   const [syncChatSubmit, setSyncChatSubmit] = useState(false);
@@ -54,7 +54,7 @@ const MultiHome = () => {
   }, []);
 
   return (
-  <ChatContext.Provider
+  <MultiChatContext.Provider
       value={{ sharedInputText, updateSharedInputText,syncChatSubmit,updateSyncChatSubmit }}
     >
     <div className="sticky top-0 z-10 flex  border-b-[1px] bg-white h-[56px] border-b-neutral-300 bg-neutral-100 pl-2 ">
@@ -66,12 +66,12 @@ const MultiHome = () => {
         <Home key={chat} serverSideApiKeyIsSet={true} serverSidePluginKeysSet={true} defaultModelId={OpenAIModelID.GPT_4}  chatId={chat}/>
       ))}
     </div>
-    </ChatContext.Provider>
+    </MultiChatContext.Provider>
   );
 };
 
-export default MultiHome;
+export default MultiChat;
 
-export function useChatContext() {
-  return useContext(ChatContext);
+export function useMultiChatContext() {
+  return useContext(MultiChatContext);
 }
