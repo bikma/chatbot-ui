@@ -23,8 +23,8 @@ const MultiChat = () => {
     setSharedInputText(text);
   };
 
-  const  updateSyncChatSubmit = () => {
-    setSyncChatSubmit(true)
+  const  updateSyncChatSubmit = (syncSubmit:boolean) => {
+    setSyncChatSubmit(syncSubmit)
   }
 
   useEffect(() => {

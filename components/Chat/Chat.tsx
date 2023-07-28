@@ -35,6 +35,7 @@ import { SystemPrompt } from './SystemPrompt';
 import { TemperatureSlider } from './Temperature';
 import { MemoizedChatMessage } from './MemoizedChatMessage';
 
+import { useMultiChatContext } from '../../pages/api/home/multiChat';
 import {onAddModelForComparison, onRemoveModelFromComparison}  from '@/pages/api/home/utils';
 
 interface Props {
@@ -44,6 +45,7 @@ interface Props {
 
 export const Chat = memo(({ stopConversationRef, chatId }: Props) => {
   const { t } = useTranslation('chat');
+  const { updateSyncChatSubmit } =  useMultiChatContext();
 
   const {
     state: {
@@ -247,6 +249,7 @@ export const Chat = memo(({ stopConversationRef, chatId }: Props) => {
           homeDispatch({ field: 'loading', value: false });
           homeDispatch({ field: 'messageIsStreaming', value: false });
         }
+        updateSyncChatSubmit(false)
       }
     },
     [
